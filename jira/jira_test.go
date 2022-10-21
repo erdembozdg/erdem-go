@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	api "gopkg.in/andygrunwald/go-jira.v1"
-	"https://github.com/erdembozdg/erdem-go/jira/mocks"
+	"github.com/erdembozdg/erdem-go/jira/mocks"
 	"go.uber.org/zap"
 )
 
