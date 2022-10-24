@@ -10,9 +10,14 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestSearchJiras(t *testing.T) {
+func TestSearchIssues(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockJiraer := mocks.NewMockJiraer(ctrl)
+	mockIssuer := mocks.NewMockissuer(ctrl)
+
+	opt := &api.SearchOptions{
+		MaxResults: 50, 
+		StartAt:    0,
+	}
 
 	i1 := api.Issue{
 		ID:  "111",
@@ -26,39 +31,32 @@ func TestSearchJiras(t *testing.T) {
 	i2 := api.Issue{
 		ID:   "222",
 		Key:  "Test-2",
-		Self: "",
 		Fields: &api.IssueFields{
 			Summary: "Test-2: bla bla",
 			Labels:  []string{"fake1", "fake2"},
 		},
 	}
-
 	jql := "fake jql"
+
 	baseUrl := "https://fake.base"
 	jira := Jira{
 		conf: Configuration{
 			BaseURL: baseUrl,
-			BasicAuth: BasicAuthConfiguration{
-				User:  "ebzdag",
-				Token: "111",
-			},
 		},
-		client: mockJiraer,
+		issue: mockIssuer,
 		logger: zap.NewNop(),
 	}
 
-	searchResult := []api.Issue{i1, i2}
-
-	mockJiraer.EXPECT().Search(jql).Times(1).Return(&searchResult, nil)
-	issues, err := jira.Search(jql)
+	mockIssuer.EXPECT().Search(jql, opt).Times(1).Return([]api.Issue{i1, i2}, nil, nil)
+	issues, _,err := jira.issue.Search(jql, opt)
 	assert.NoError(t, err)
 	assert.Len(t, issues, 2)
 	assert.Equal(t, i1.Key, issues[0].Key)
 	assert.Equal(t, i2.Key, issues[1].Key)
 	assert.Equal(t, i1.ID, issues[0].ID)
 	assert.Equal(t, i2.ID, issues[1].ID)
-	assert.Equal(t, i1.Fields.Summary, issues[0].Summary)
-	assert.Equal(t, i2.Fields.Summary, issues[1].Summary)
-	assert.Equal(t, []string{"fake1", "fake2"}, issues[0].Labels)
-	assert.Equal(t, []string{"fake1", "fake2"}, issues[1].Labels)
+	assert.Equal(t, i1.Fields.Summary, issues[0].Fields.Summary)
+	assert.Equal(t, i2.Fields.Summary, issues[1].Fields.Summary)
+	assert.Equal(t, []string{"fake1", "fake2"}, issues[0].Fields.Labels)
+	assert.Equal(t, []string{"fake1", "fake2"}, issues[1].Fields.Labels)
 }

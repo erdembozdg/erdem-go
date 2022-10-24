@@ -10,40 +10,41 @@ import (
 	reflect "reflect"
 )
 
-// MockJiraer is a mock of Jiraer interface.
-type MockJiraer struct {
+// Mockissuer is a mock of issuer interface.
+type Mockissuer struct {
 	ctrl     *gomock.Controller
-	recorder *MockJiraerMockRecorder
+	recorder *MockissuerMockRecorder
 }
 
-// MockJiraerMockRecorder is the mock recorder for MockJiraer.
-type MockJiraerMockRecorder struct {
-	mock *MockJiraer
+// MockissuerMockRecorder is the mock recorder for Mockissuer.
+type MockissuerMockRecorder struct {
+	mock *Mockissuer
 }
 
-// NewMockJiraer creates a new mock instance.
-func NewMockJiraer(ctrl *gomock.Controller) *MockJiraer {
-	mock := &MockJiraer{ctrl: ctrl}
-	mock.recorder = &MockJiraerMockRecorder{mock}
+// NewMockissuer creates a new mock instance.
+func NewMockissuer(ctrl *gomock.Controller) *Mockissuer {
+	mock := &Mockissuer{ctrl: ctrl}
+	mock.recorder = &MockissuerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockJiraer) EXPECT() *MockJiraerMockRecorder {
+func (m *Mockissuer) EXPECT() *MockissuerMockRecorder {
 	return m.recorder
 }
 
 // Search mocks base method.
-func (m *MockJiraer) Search(jql string) ([]jira_go_api.Issue, error) {
+func (m *Mockissuer) Search(jql string, options *jira_go_api.SearchOptions) ([]jira_go_api.Issue, *jira_go_api.Response, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Search", jql)
+	ret := m.ctrl.Call(m, "Search", jql, options)
 	ret0, _ := ret[0].([]jira_go_api.Issue)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(*jira_go_api.Response)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // Search indicates an expected call of Search.
-func (mr *MockJiraerMockRecorder) Search(jql interface{}) *gomock.Call {
+func (mr *MockissuerMockRecorder) Search(jql, options interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*MockJiraer)(nil).Search), jql)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*Mockissuer)(nil).Search), jql, options)
 }

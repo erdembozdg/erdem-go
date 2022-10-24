@@ -26,14 +26,14 @@ type BasicAuthConfiguration struct {
 }
 
 //go:generate mockgen -destination=mocks/jira.go -package=mocks -source=jira.go
-type Jiraer interface {
-	Search(jql string) ([]Issue, error)
+type issuer interface {
+	Search(jql string, options *api.SearchOptions) ([]api.Issue, *api.Response, error)
 }
 
 // Jira allows querying Jira issues.
 type Jira struct {
 	conf   Configuration
-	client *api.Client
+	issue issuer
 	logger *zap.Logger
 }
 
@@ -62,7 +62,7 @@ func New(conf Configuration, logger *zap.Logger) (*Jira, error) {
 
 	return &Jira{
 		conf:   conf,
-		client: client,
+		issue: client.Issue,
 		logger: logger,
 	}, nil
 }
@@ -75,12 +75,12 @@ func (j *Jira) Search(jql string) ([]Issue, error) {
 		StartAt:    0,  // Make sure we start grabbing issues from last checkpoint
 	}
 
-	results, res, err := j.client.Issue.Search(jql, opt)
+	results, res, err := j.issue.Search(jql, opt)
 	if err != nil || res == nil {
 		return nil, err
 	}
 
-	j.logger.Debug("found jira issues", zap.Any("jira.search.result", res))
+	j.logger.Debug("found jira issues", zap.Any("jira.search.total", res.Total))
 
 	// If we encounter this error it's time to implement pagination.
 	if res.Total > res.MaxResults {
